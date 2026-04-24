@@ -7,16 +7,16 @@ public class BlockMove : MonoBehaviour
     public float moveSpeed = 3f; // 1秒間に進むマス数
     public GameObject arrowSet;
     public LayerMask obstacleLayer;
-    private bool isMoving = false;
+    static public bool isMoving = false;
 
-    private Vector2 startPosition;  //初期位置
+    
     private List<Vector2> moveHistory = new List<Vector2>();
 
     private bool isJustMoved = false;
 
     void Start()
     {
-        startPosition = transform.position;    
+         
 
         if(TryGetComponent<Rigidbody2D>(out var rb))
         {
@@ -67,59 +67,7 @@ public class BlockMove : MonoBehaviour
             });
     }
 
-    public void StepBack()
-    {
-        if (isJustMoved || isMoving || moveHistory.Count == 0)
-        { 
-            //isJustMoved = false;
-            return ;
-        }
-
-        if ((Vector2)transform.position == startPosition) return;
-
-        int lastIndex = moveHistory.Count - 1;
-        Vector2 lastDir = moveHistory[lastIndex];
-
-        Vector2 BackDir = -lastDir;
-        Vector2 BackPos = (Vector2)transform.position + BackDir;
     
-        Collider2D myCollider = GetComponent<Collider2D>();
-        if(myCollider != null) myCollider.enabled = false;
-
-        //[条件１]
-        Collider2D hit = Physics2D.OverlapCircle(BackPos, 0.4f, obstacleLayer);
-
-        if (myCollider != null) myCollider.enabled = true;
-
-        if (hit == null)
-        {
-            isMoving = true;
-
-            moveHistory.RemoveAt(lastIndex);
-
-            transform.DOMove(BackPos, 0.4f)
-                .SetEase(Ease.OutQuad)
-                .OnComplete(() =>
-                {
-                    isMoving = false;
-
-                    if (moveHistory.Count == 0)
-                    {
-                        transform.position = startPosition;
-                    }
-                    var manager = Object.FindAnyObjectByType<TurnManager>();
-                    if (manager != null)
-                    {
-                        manager.CheckAllGoals();
-                    }
-                });
-        }
-        else
-        {
-            isMoving = false;
-            Debug.Log($"{name} : 戻り先が塞がっているため待機します。");
-        }
-    }
     public void ResetJustMovedFlag()
     {
         isJustMoved = false;
@@ -147,8 +95,6 @@ public class BlockMove : MonoBehaviour
             float targetY = Mathf.Round(hit.point.y - dir.y * 0.5f);
             return new Vector2(targetX, targetY);
         }
-
-        // 壁がなければとりあえず遠くへ
-        return (Vector2)transform.position + (dir * 100f);
+        return origin;
     }
 }

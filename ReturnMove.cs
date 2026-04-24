@@ -19,7 +19,7 @@ public class ReturnMove : MonoBehaviour
     }
     public void StepBack()
     {
-        if (BlockMove.isJustMoved || BlockMove.isMoving || BlockMove.moveHistory.Count == 0)
+        if (isJustMoved || BlockMove.isMoving || moveHistory.Count == 0)
         {
             //isJustMoved = false;
             return;
@@ -27,8 +27,8 @@ public class ReturnMove : MonoBehaviour
 
         if ((Vector2)transform.position == startPosition) return;
 
-        int lastIndex = BlockMove.moveHistory.Count - 1;
-        Vector2 lastDir = BlockMove.moveHistory[lastIndex];
+        int lastIndex = moveHistory.Count - 1;
+        Vector2 lastDir = moveHistory[lastIndex];
 
         Vector2 BackDir = -lastDir;
         Vector2 BackPos = (Vector2)transform.position + BackDir;
@@ -45,7 +45,7 @@ public class ReturnMove : MonoBehaviour
         {
             BlockMove.isMoving = true;
 
-            BlockMove.moveHistory.RemoveAt(lastIndex);
+            moveHistory.RemoveAt(lastIndex);
 
             transform.DOMove(BackPos, 0.4f)
                 .SetEase(Ease.OutQuad)
@@ -53,7 +53,7 @@ public class ReturnMove : MonoBehaviour
                 {
                     BlockMove.isMoving = false;
 
-                    if (BlockMove.moveHistory.Count == 0)
+                    if (moveHistory.Count == 0)
                     {
                         transform.position = startPosition;
                     }
