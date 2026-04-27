@@ -7,16 +7,17 @@ public class BlockMove : MonoBehaviour
     public float moveSpeed = 3f; // 1秒間に進むマス数
     public GameObject arrowSet;
     public LayerMask obstacleLayer;
-    private bool isMoving = false;
+    static public bool isMoving = false;
 
-    private Vector2 startPosition;  //初期位置
-    private List<Vector2> moveHistory = new List<Vector2>();
-
-    private bool isJustMoved = false;
+    [HideInInspector]
+    public List<Vector2> moveHistory = new List<Vector2>();
+    
+    [HideInInspector]
+    public bool isJustMoved = false;
 
     void Start()
     {
-        startPosition = transform.position;    
+         
 
         if(TryGetComponent<Rigidbody2D>(out var rb))
         {
@@ -67,64 +68,6 @@ public class BlockMove : MonoBehaviour
             });
     }
 
-    public void StepBack()
-    {
-        if (isJustMoved || isMoving || moveHistory.Count == 0)
-        { 
-            //isJustMoved = false;
-            return ;
-        }
-
-        if ((Vector2)transform.position == startPosition) return;
-
-        int lastIndex = moveHistory.Count - 1;
-        Vector2 lastDir = moveHistory[lastIndex];
-
-        Vector2 BackDir = -lastDir;
-        Vector2 BackPos = (Vector2)transform.position + BackDir;
-    
-        Collider2D myCollider = GetComponent<Collider2D>();
-        if(myCollider != null) myCollider.enabled = false;
-
-        //[条件１]
-        Collider2D hit = Physics2D.OverlapCircle(BackPos, 0.4f, obstacleLayer);
-
-        if (myCollider != null) myCollider.enabled = true;
-
-        if (hit == null)
-        {
-            isMoving = true;
-
-            moveHistory.RemoveAt(lastIndex);
-
-            transform.DOMove(BackPos, 0.4f)
-                .SetEase(Ease.OutQuad)
-                .OnComplete(() =>
-                {
-                    isMoving = false;
-
-                    if (moveHistory.Count == 0)
-                    {
-                        transform.position = startPosition;
-                    }
-                    var manager = Object.FindAnyObjectByType<TurnManager>();
-                    if (manager != null)
-                    {
-                        manager.CheckAllGoals();
-                    }
-                });
-        }
-        else
-        {
-            isMoving = false;
-            Debug.Log($"{name} : 戻り先が塞がっているため待機します。");
-        }
-    }
-    public void ResetJustMovedFlag()
-    {
-        isJustMoved = false;
-    }
-
     // 壁を探す「目」の役割
     private Vector2 CalculateTarget(Vector2 dir)
     {
@@ -134,7 +77,6 @@ public class BlockMove : MonoBehaviour
         if(myCollider != null) myCollider.enabled = false;
 
         // Physics2D.Raycast(今の位置, 方向, 飛ばす距離, 対象レイヤー)
-        // 自分のコライダーに当たらないよう、少しだけ(0.6f)外側から飛ばすのがコツです
         Vector2 origin = (Vector2)transform.position + (dir * 0.51f);
         RaycastHit2D hit = Physics2D.Raycast(origin,dir,100f,obstacleLayer);
         
@@ -142,13 +84,10 @@ public class BlockMove : MonoBehaviour
 
         if (hit.collider != null)
         {
-            // ヒット地点の座標を四捨五入して「マス目」に合わせるのがパズルでは確実です
             float targetX = Mathf.Round(hit.point.x - dir.x * 0.5f);
             float targetY = Mathf.Round(hit.point.y - dir.y * 0.5f);
             return new Vector2(targetX, targetY);
         }
-
-        // 壁がなければとりあえず遠くへ
-        return (Vector2)transform.position + (dir * 100f);
+        return origin;
     }
 }

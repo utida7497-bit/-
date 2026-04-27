@@ -5,11 +5,14 @@ using System.Collections.Generic;
 public class ReturnMove : MonoBehaviour
 {
     private Vector2 startPosition;  //èâä˙à íu
+    private BlockMove blockMove;
+    public LayerMask obstacleLayer;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         startPosition = transform.position;
+        blockMove = GetComponent<BlockMove>();
     }
 
     // Update is called once per frame
@@ -19,7 +22,7 @@ public class ReturnMove : MonoBehaviour
     }
     public void StepBack()
     {
-        if (BlockMove.isJustMoved || BlockMove.isMoving || BlockMove.moveHistory.Count == 0)
+        if (blockMove.isJustMoved || BlockMove.isMoving || blockMove.moveHistory.Count == 0)
         {
             //isJustMoved = false;
             return;
@@ -27,8 +30,8 @@ public class ReturnMove : MonoBehaviour
 
         if ((Vector2)transform.position == startPosition) return;
 
-        int lastIndex = BlockMove.moveHistory.Count - 1;
-        Vector2 lastDir = BlockMove.moveHistory[lastIndex];
+        int lastIndex = blockMove.moveHistory.Count - 1;
+        Vector2 lastDir = blockMove.moveHistory[lastIndex];
 
         Vector2 BackDir = -lastDir;
         Vector2 BackPos = (Vector2)transform.position + BackDir;
@@ -45,7 +48,7 @@ public class ReturnMove : MonoBehaviour
         {
             BlockMove.isMoving = true;
 
-            BlockMove.moveHistory.RemoveAt(lastIndex);
+            blockMove.moveHistory.RemoveAt(lastIndex);
 
             transform.DOMove(BackPos, 0.4f)
                 .SetEase(Ease.OutQuad)
@@ -53,7 +56,7 @@ public class ReturnMove : MonoBehaviour
                 {
                     BlockMove.isMoving = false;
 
-                    if (BlockMove.moveHistory.Count == 0)
+                    if (blockMove.moveHistory.Count == 0)
                     {
                         transform.position = startPosition;
                     }
@@ -69,5 +72,9 @@ public class ReturnMove : MonoBehaviour
             BlockMove.isMoving = false;
             Debug.Log($"{name} : ñﬂÇËêÊÇ™ç«Ç™Ç¡ÇƒÇ¢ÇÈÇΩÇﬂë“ã@ÇµÇ‹Ç∑ÅB");
         }
+    }
+    public void ResetJustMovedFlag()
+    {
+        blockMove.isJustMoved = false;
     }
 }

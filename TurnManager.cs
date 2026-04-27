@@ -37,11 +37,11 @@ public class TurnManager : MonoBehaviour
     IEnumerator ProcessTurnSequence()
     {
         // 1. 全ブロックを取得
-        List<BlockMove> allBlocks = Object.FindObjectsByType<BlockMove>(FindObjectsSortMode.None).ToList();
+        List<ReturnMove> allBlocks = Object.FindObjectsByType<ReturnMove>(FindObjectsSortMode.None).ToList();
         for (int i = 0; i < 2; ++i)
         {
 
-            foreach (BlockMove block in allBlocks)
+            foreach (ReturnMove block in allBlocks)
             {
                 block.StepBack();
                 yield return new WaitForSeconds(0.1f);
